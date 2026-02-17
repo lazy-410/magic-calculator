@@ -121,22 +121,23 @@
         <div class="display" id="display">0</div>
         <div class="buttons">
             <button class="btn clear" onclick="clearDisplay()">C</button>
+            <button class="btn" onclick="backspace()">←</button>
+            <button class="btn operator" onclick="appendOperator('/')">÷</button>
+            <button class="btn operator" onclick="appendOperator('*')">×</button>
             <button class="btn" onclick="appendNumber('7')">7</button>
             <button class="btn" onclick="appendNumber('8')">8</button>
             <button class="btn" onclick="appendNumber('9')">9</button>
-            <button class="btn operator" onclick="appendOperator('/')">÷</button>
+            <button class="btn operator" onclick="appendOperator('-')">−</button>
             <button class="btn" onclick="appendNumber('4')">4</button>
             <button class="btn" onclick="appendNumber('5')">5</button>
             <button class="btn" onclick="appendNumber('6')">6</button>
-            <button class="btn operator" onclick="appendOperator('*')">×</button>
+            <button class="btn operator" onclick="appendOperator('+')">+</button>
             <button class="btn" onclick="appendNumber('1')">1</button>
             <button class="btn" onclick="appendNumber('2')">2</button>
             <button class="btn" onclick="appendNumber('3')">3</button>
-            <button class="btn operator" onclick="appendOperator('-')">−</button>
+            <button class="btn equal" onclick="calculateResult()">=</button>
             <button class="btn" onclick="appendNumber('0')">0</button>
             <button class="btn" onclick="appendNumber('.')">.</button>
-            <button class="btn equal" onclick="calculateResult()">=</button>
-            <button class="btn operator" onclick="appendOperator('+')">+</button>
         </div>
     </div>
     
@@ -164,21 +165,19 @@
             updateDisplay();
         }
         
+        function backspace() {
+            if (displayValue.length > 1) {
+                displayValue = displayValue.slice(0, -1);
+            } else {
+                displayValue = '0';
+                waitingForOperand = true;
+            }
+            updateDisplay();
+        }
+        
         function appendNumber(number) {
             if (isMagicMode) {
-                // 魔术模式下，输入补数
-                if (complementIndex < complement.length) {
-                    const complementDigit = complement[complementIndex];
-                    if (waitingForOperand) {
-                        displayValue = complementDigit;
-                        waitingForOperand = false;
-                    } else {
-                        displayValue += complementDigit;
-                    }
-                    complementIndex++;
-                    updateDisplay();
-                }
-                // 补数输入完后，再按按键不会有任何反应
+                // 魔术模式下，不执行任何操作，因为全局点击事件已经处理了补数输入
                 return;
             }
             
@@ -224,12 +223,12 @@
         function calculateResult() {
             if (operator === null) return;
             
-            // 获取当前日期时间（不补0）
+            // 获取当前日期时间
             const now = new Date();
             const month = now.getMonth() + 1;
             const day = now.getDate();
             const hours = now.getHours();
-            const minutes = now.getMinutes();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
             
             // 组合成目标数字（只从月份开始）
             const targetNumber = month + '' + day + '' + hours + '' + minutes;
@@ -247,12 +246,12 @@
         function startMagicMode() {
             isMagicMode = true;
             
-            // 获取当前日期时间（不补0）
+            // 获取当前日期时间
             const now = new Date();
             const month = now.getMonth() + 1;
             const day = now.getDate();
             const hours = now.getHours();
-            const minutes = now.getMinutes();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
             
             // 组合成目标数字（只从月份开始）
             let targetNumber = parseInt(month + '' + day + '' + hours + '' + minutes);
@@ -270,6 +269,29 @@
             complement = (targetNumber - currentTotal).toString();
             complementIndex = 0;
         }
+        
+        // 添加全局点击事件监听器
+        document.addEventListener('click', function(e) {
+            // 检查是否是魔术模式
+            if (isMagicMode) {
+                // 检查点击的元素是否不是运算符号或等于号
+                const target = e.target;
+                if (!target.classList.contains('operator') && !target.classList.contains('equal')) {
+                    // 魔术模式下，输入补数
+                    if (complementIndex < complement.length) {
+                        const complementDigit = complement[complementIndex];
+                        if (waitingForOperand) {
+                            displayValue = complementDigit;
+                            waitingForOperand = false;
+                        } else {
+                            displayValue += complementDigit;
+                        }
+                        complementIndex++;
+                        updateDisplay();
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
