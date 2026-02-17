@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔术计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .calculator {
+            background-color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 320px;
+        }
+        
+        .display {
+            background-color: #222;
+            color: #fff;
+            font-size: 36px;
+            text-align: right;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            overflow: hidden;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #666;
+        }
+        
+        .btn:active {
+            background-color: #444;
+        }
+        
+        .btn.operator {
+            background-color: #ff9500;
+        }
+        
+        .btn.operator:hover {
+            background-color: #ffaa33;
+        }
+        
+        .btn.operator:active {
+            background-color: #cc7a00;
+        }
+        
+        .btn.equal {
+            background-color: #4cd964;
+            grid-column: span 2;
+        }
+        
+        .btn.equal:hover {
+            background-color: #66e07a;
+        }
+        
+        .btn.equal:active {
+            background-color: #3cc051;
+        }
+        
+        .btn.clear {
+            background-color: #ff3b30;
+        }
+        
+        .btn.clear:hover {
+            background-color: #ff5c52;
+        }
+        
+        .btn.clear:active {
+            background-color: #cc3027;
+        }
+        
+        .btn.magic {
+            background-color: #9c27b0;
+            grid-column: span 2;
+        }
+        
+        .btn.magic:hover {
+            background-color: #ab47bc;
+        }
+        
+        .btn.magic:active {
+            background-color: #7b1fa2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="btn clear" onclick="clearDisplay()">C</button>
+            <button class="btn" onclick="appendNumber('7')">7</button>
+            <button class="btn" onclick="appendNumber('8')">8</button>
+            <button class="btn" onclick="appendNumber('9')">9</button>
+            <button class="btn operator" onclick="appendOperator('/')">÷</button>
+            <button class="btn" onclick="appendNumber('4')">4</button>
+            <button class="btn" onclick="appendNumber('5')">5</button>
+            <button class="btn" onclick="appendNumber('6')">6</button>
+            <button class="btn operator" onclick="appendOperator('*')">×</button>
+            <button class="btn" onclick="appendNumber('1')">1</button>
+            <button class="btn" onclick="appendNumber('2')">2</button>
+            <button class="btn" onclick="appendNumber('3')">3</button>
+            <button class="btn operator" onclick="appendOperator('-')">−</button>
+            <button class="btn" onclick="appendNumber('0')">0</button>
+            <button class="btn" onclick="appendNumber('.')">.</button>
+            <button class="btn equal" onclick="calculateResult()">=</button>
+            <button class="btn operator" onclick="appendOperator('+')">+</button>
+        </div>
+    </div>
+    
+    <script>
+        let displayValue = '0';
+        let currentValue = 0;
+        let operator = null;
+        let waitingForOperand = true;
+        let inputCount = 0;
+        let totalSum = 0;
+        let complement = '';
+        let complementIndex = 0;
+        let isMagicMode = false;
+        
+        function clearDisplay() {
+            displayValue = '0';
+            currentValue = 0;
+            operator = null;
+            waitingForOperand = true;
+            inputCount = 0;
+            totalSum = 0;
+            complement = '';
+            complementIndex = 0;
+            isMagicMode = false;
+            updateDisplay();
+        }
+        
+        function appendNumber(number) {
+            if (isMagicMode) {
+                // 魔术模式下，输入补数
+                if (complementIndex < complement.length) {
+                    const complementDigit = complement[complementIndex];
+                    if (waitingForOperand) {
+                        displayValue = complementDigit;
+                        waitingForOperand = false;
+                    } else {
+                        displayValue += complementDigit;
+                    }
+                    complementIndex++;
+                    updateDisplay();
+                }
+                // 补数输入完后，再按按键不会有任何反应
+                return;
+            }
+            
+            if (waitingForOperand) {
+                displayValue = number;
+                waitingForOperand = false;
+            } else {
+                displayValue += number;
+            }
+            updateDisplay();
+        }
+        
+        function appendOperator(op) {
+            if (isMagicMode) return;
+            
+            if (operator !== null && inputCount < 2) {
+                // 只有在非魔术模式且输入次数小于2时才计算结果
+                const newValue = parseFloat(displayValue);
+                currentValue += newValue;
+                displayValue = currentValue.toString();
+                updateDisplay();
+            } else if (operator === null) {
+                currentValue = parseFloat(displayValue) || 0;
+            }
+            
+            totalSum += parseFloat(displayValue) || 0;
+            inputCount++;
+            
+            // 检查是否达到第三次输入
+            if (inputCount >= 2) {
+                operator = '+'; // 强制使用加法
+                waitingForOperand = true;
+                startMagicMode();
+                // 进入魔术模式后，清空显示，准备输入补数
+                displayValue = '';
+                updateDisplay();
+            } else {
+                operator = '+'; // 强制使用加法
+                waitingForOperand = true;
+            }
+        }
+        
+        function calculateResult() {
+            if (operator === null) return;
+            
+            // 获取当前日期时间（不补0）
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // 组合成目标数字（只从月份开始）
+            const targetNumber = month + '' + day + '' + hours + '' + minutes;
+            
+            displayValue = targetNumber;
+            operator = null;
+            waitingForOperand = true;
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            document.getElementById('display').textContent = displayValue;
+        }
+        
+        function startMagicMode() {
+            isMagicMode = true;
+            
+            // 获取当前日期时间（不补0）
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // 组合成目标数字（只从月份开始）
+            let targetNumber = parseInt(month + '' + day + '' + hours + '' + minutes);
+            
+            // 计算当前总和
+            const currentTotal = totalSum + (parseFloat(displayValue) || 0);
+            
+            // 确保目标数字大于当前总和，避免补数为负数
+            if (targetNumber <= currentTotal) {
+                // 如果目标数字小于等于当前总和，添加一个大数（例如10000000）
+                targetNumber += 10000000;
+            }
+            
+            // 计算补数
+            complement = (targetNumber - currentTotal).toString();
+            complementIndex = 0;
+        }
+    </script>
+</body>
+</html>
