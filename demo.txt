@@ -1,0 +1,6 @@
+# Demo File
+
+This is a demo file created for testing Git push functionality.
+
+Created on: 2026-02-27
+By: lazy-410
