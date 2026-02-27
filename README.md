@@ -2,6 +2,12 @@
 
 这是一个基于HTML、CSS和JavaScript实现的魔术计算器，它能够在用户输入后，通过计算补数的方式，最终显示当前的日期和时间。
 
+## 项目信息
+
+- **GitHub 仓库**：[lazy-410/magic-calculator](https://github.com/lazy-410/magic-calculator)
+- **最新更新**：2026年2月27日
+- **作者**：lazy-410
+
 ## 功能特点
 
 - **正常计算器外观**：看起来是一个普通的计算器，支持基本的数字输入
