@@ -1,0 +1,24 @@
+{
+  "name": "magic-calculator",
+  "version": "1.0.0",
+  "description": "魔术计算器 - 复刻春晚魔术",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lazy-410/magic-calculator.git"
+  },
+  "keywords": [
+    "calculator",
+    "magic",
+    "春晚"
+  ],
+  "author": "lazy-410",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lazy-410/magic-calculator/issues"
+  },
+  "homepage": "https://github.com/lazy-410/magic-calculator#readme"
+}
